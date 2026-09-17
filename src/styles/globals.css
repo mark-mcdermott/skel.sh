@@ -1,0 +1,121 @@
+@import 'tailwindcss';
+
+/*
+ * Fixed palette, pulled from the mascot: its outline is the ink, its bones are
+ * the bone, and the blush on its cheeks is the only accent the page gets.
+ * Keeping the accent to one colour is what lets the logo stay the loudest
+ * thing here. These three are literal and never move; the tokens below are
+ * the ones that respond to the theme.
+ */
+@theme {
+  --color-bone: #faf8f5;
+  --color-ink: #14110f;
+  --color-blush: #f2a8bc;
+
+  /* Astro's font pipeline emits these; map them onto Tailwind's font scale so
+     `font-display` and `font-mono` resolve to the self-hosted faces. */
+  --font-display: var(--font-space-grotesk);
+  --font-mono: var(--font-plex-mono);
+}
+
+/*
+ * Semantic tokens. `inline` matters: without it Tailwind copies each value into
+ * the utilities at build time and the dark block below can never move them.
+ * With it the utilities emit `var(--surface)` and follow whatever `:root` says.
+ */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-sunk: var(--surface-sunk);
+  --color-edge: var(--edge);
+  --color-fg: var(--fg);
+  --color-fg-soft: var(--fg-soft);
+  --color-fg-muted: var(--fg-muted);
+  --color-accent: var(--accent);
+  --color-terminal: var(--terminal);
+}
+
+/* Measured against surface, all clearing WCAG AA at 4.5:1:
+   fg 17.74 · fg-soft 14.28 · fg-muted 5.62 · accent 5.31
+   (the sunk surface costs about 0.4 across the board and still clears). */
+:root {
+  --surface: #faf8f5;
+  --surface-sunk: #f2eee8;
+  --edge: #e4ded4;
+  --fg: #14110f;
+  --fg-soft: #2a2523;
+  --fg-muted: #6b625c;
+  --accent: #b03f62;
+
+  /* The terminal blocks are ink against the bone page — that contrast is most
+     of the design's charm, so in light mode this is simply the ink. */
+  --terminal: #14110f;
+}
+
+/*
+ * Dark is a warm inversion, not a neutral one — the ground keeps some of the
+ * bone's warmth so the mascot doesn't look pasted onto a different site. The
+ * accent flips to the light blush, which carries contrast on ink where the
+ * deep blush does not.
+ *
+ * Measured against surface: fg 17.02 · fg-soft 12.95 · fg-muted 6.12 · accent 9.94
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #14110f;
+    --surface-sunk: #1d1917;
+    --edge: #332d29;
+    --fg: #f7f3ee;
+    --fg-soft: #ddd5cc;
+    --fg-muted: #9c918a;
+    --accent: #f2a8bc;
+
+    /* Lifted off the ground rather than matching it. At ink-on-ink the cards
+       lost the thing that makes them read as terminals and became outlined
+       boxes. 1.13:1 is a small step, but it's the difference between a
+       terminal on a page and a border. Text on it still clears AA:
+       bone 15.74 · white/50 prompt 5.11 · blush 8.82. */
+    --terminal: #221d1a;
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--surface);
+    color: var(--fg);
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* One visible focus treatment for the whole page, accent-coloured so it
+     reads as intentional rather than as the browser default leaking through. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background-color: var(--color-blush);
+    color: var(--color-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

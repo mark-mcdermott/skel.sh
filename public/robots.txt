@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://skel.sh/sitemap-index.xml

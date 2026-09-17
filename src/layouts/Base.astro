@@ -1,0 +1,45 @@
+---
+import Font from 'astro/components/Font.astro'
+import Analytics from '../components/Analytics.astro'
+import '../styles/globals.css'
+
+interface Props {
+  title: string
+  description: string
+}
+
+const { title, description } = Astro.props
+const canonical = new URL(Astro.url.pathname, Astro.site)
+const ogImage = new URL('/og.png', Astro.site)
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={canonical} />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Both faces are used above the fold — the wordmark and the terminal
+         block — so both are worth the preload rather than just the display. -->
+    <Font cssVariable="--font-space-grotesk" preload />
+    <Font cssVariable="--font-plex-mono" preload />
+  </head>
+
+  <body>
+    <slot />
+    <Analytics />
+  </body>
+</html>

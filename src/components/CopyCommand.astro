@@ -1,0 +1,80 @@
+---
+interface Props {
+  command: string
+  /** Visual weight. `lead` is the hero's primary call to action. */
+  variant?: 'lead' | 'inline'
+}
+
+const { command, variant = 'inline' } = Astro.props
+const isLead = variant === 'lead'
+---
+
+<div
+  class:list={[
+    'group flex items-start gap-3 rounded-xl border transition-colors',
+    isLead
+      ? 'border-edge bg-surface-sunk py-2.5 pr-2.5 pl-4 hover:border-fg-muted/50'
+      : 'border-edge bg-surface-sunk px-3 py-2 hover:border-fg-muted/40',
+  ]}
+  data-copy-command
+>
+  <!-- Wraps rather than scrolls. A clone URL is wider than a third of the
+       install row, and an overflowing line just looked truncated — no scrollbar
+       shows until you try, and the copy button sat on top of the cut. -->
+  <code
+    class:list={[
+      'flex-1 py-0.5 font-mono leading-relaxed wrap-anywhere whitespace-pre-wrap text-fg',
+      isLead ? 'text-[15px]' : 'text-[13px]',
+    ]}
+  >
+    <span class="mr-2 select-none text-fg-muted" aria-hidden="true">$</span>{command}
+  </code>
+
+  <button
+    type="button"
+    class:list={[
+      'relative shrink-0 cursor-pointer rounded-lg border border-transparent font-mono text-fg-muted transition-colors',
+      'hover:border-edge hover:bg-surface hover:text-fg',
+      isLead ? 'px-3 py-2 text-xs' : 'px-2 py-1.5 text-[11px]',
+    ]}
+    data-copy-button
+    data-command={command}
+    aria-label={`Copy "${command}" to clipboard`}
+  >
+    <span data-copy-idle>Copy</span>
+    <span class="hidden text-accent" data-copy-done>Copied</span>
+  </button>
+</div>
+
+<script>
+  const RESET_MS = 2000
+
+  document.querySelectorAll<HTMLButtonElement>('[data-copy-button]').forEach((button) => {
+    const idle = button.querySelector<HTMLElement>('[data-copy-idle]')
+    const done = button.querySelector<HTMLElement>('[data-copy-done]')
+    const command = button.dataset.command
+    if (!idle || !done || !command) return
+
+    let timer: ReturnType<typeof setTimeout> | undefined
+
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(command)
+      } catch {
+        // Denied permission, or a non-secure context. The command is visible
+        // and selectable either way, so this stays silent rather than throwing
+        // an error state at someone who can just select the text.
+        return
+      }
+
+      idle.hidden = true
+      done.classList.remove('hidden')
+
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        idle.hidden = false
+        done.classList.add('hidden')
+      }, RESET_MS)
+    })
+  })
+</script>

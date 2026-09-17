@@ -1,0 +1,41 @@
+---
+interface Props {
+  /** Shown in the title bar. Omit for a chrome-less block. */
+  label?: string
+  class?: string
+}
+
+const { label, class: className } = Astro.props
+
+/*
+ * Rendered and trimmed rather than slotted straight into the <pre>. The
+ * indentation that keeps the calling markup readable is real whitespace to
+ * a <pre>, and it was showing up as a blank line at the foot of every card.
+ * The content is authored here, not user input, so set:html is safe.
+ */
+const code = (await Astro.slots.render('default')).trim()
+---
+
+<div
+  class:list={[
+    'overflow-hidden rounded-xl border border-edge bg-terminal shadow-[0_1px_2px_rgba(20,17,15,0.06),0_12px_28px_-12px_rgba(20,17,15,0.25)]',
+    className,
+  ]}
+>
+  {
+    label && (
+      <div class="flex items-center gap-2 border-b border-white/8 px-4 py-2.5">
+        <span class="flex gap-1.5" aria-hidden="true">
+          <span class="size-2.5 rounded-full bg-white/18" />
+          <span class="size-2.5 rounded-full bg-white/18" />
+          <span class="size-2.5 rounded-full bg-white/18" />
+        </span>
+        <span class="ml-1 font-mono text-xs text-white/50">{label}</span>
+      </div>
+    )
+  }
+
+  <div class="overflow-x-auto px-4 py-4 sm:px-5">
+    <pre class="font-mono text-[13px] leading-relaxed text-bone sm:text-sm" set:html={code} />
+  </div>
+</div>
