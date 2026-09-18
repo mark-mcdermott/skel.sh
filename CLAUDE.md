@@ -40,6 +40,12 @@ sync workflow runs that guard **before** committing, so a drifted page is never 
 Only the **version** is rendered from synced data directly. Everything else on the page —
 the demo tree especially — is editorial and should stay that way.
 
+## Theming
+
+Three states: no stored choice follows the OS, and the toggle sets an explicit override in
+`localStorage`. Toggling back to whatever the OS already prefers **clears** the override
+rather than pinning it, so the page resumes tracking the system. Guarded by tests.
+
 ## Commands
 
 ```bash
@@ -57,6 +63,14 @@ pnpm bless     # re-approve upstream wording after updating the page copy
 - **`generatedAt` is excluded from change detection** in the sync — it moves every run, so
   writing unconditionally would defeat the workflow's "commit only if the CLI moved" guard
   and land a junk commit, and a production deploy, every night.
+- **The dark palette is written twice in `globals.css`** — once under
+  `@media (prefers-color-scheme: dark)` for "system is dark and the visitor hasn't chosen",
+  and once under `:root[data-theme='dark']` for an explicit choice. CSS can't share a
+  declaration block across the two, and `light-dark()` fails to a blank palette rather than
+  degrading. Edit both lists together.
+- **The theme script in `Base.astro` must stay `is:inline` and in `<head>`.** Bundling or
+  deferring it means the browser paints before the stored choice is applied, so anyone whose
+  theme opposes their OS sees the wrong one flash first.
 
 ## Release flow
 

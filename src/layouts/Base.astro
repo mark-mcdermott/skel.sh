@@ -18,6 +18,22 @@ const ogImage = new URL('/og.png', Astro.site)
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!--
+      Runs before the first paint, inline and unbundled, so a visitor who chose
+      the theme that opposes their OS doesn't see the other one flash first.
+      Anything deferred or bundled is too late: the browser has painted by then.
+      No stored choice leaves the attribute off, which is what makes the CSS
+      fall through to the system preference.
+    -->
+    <script is:inline>
+      try {
+        const stored = localStorage.getItem('theme')
+        if (stored === 'light' || stored === 'dark') {
+          document.documentElement.dataset.theme = stored
+        }
+      } catch {}
+    </script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="canonical" href={canonical} />
     <meta name="generator" content={Astro.generator} />
