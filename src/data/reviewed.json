@@ -1,0 +1,41 @@
+{
+  "note": "Upstream text the site paraphrases. Regenerate with `pnpm bless` after updating the copy on the page to match.",
+  "blessedAt": "2026-09-18T02:16:05.682Z",
+  "ref": "v0.3.2",
+  "install": [
+    {
+      "method": "Homebrew",
+      "commands": [
+        "brew tap mark-mcdermott/skel",
+        "brew install skel"
+      ]
+    },
+    {
+      "method": "Install script",
+      "commands": [
+        "git clone https://github.com/mark-mcdermott/skel.git",
+        "cd skel",
+        "./install.sh",
+        "./install.sh ~/.local/bin"
+      ]
+    },
+    {
+      "method": "Make",
+      "commands": [
+        "git clone https://github.com/mark-mcdermott/skel.git",
+        "cd skel",
+        "make install"
+      ]
+    }
+  ],
+  "rules": [
+    "Use 2 spaces per indent level (or set a custom width with `-i N`)",
+    "Tabs are not allowed",
+    "Blank lines are not allowed in piped/heredoc input",
+    "Duplicate paths are not allowed",
+    "Paths must be relative — `/`, `~`, and `..` are not allowed",
+    "Directories can: end with `/` or be inferred automatically from indentation",
+    "Empty directories must end with `/`",
+    "Skel creates files relative to the current directory"
+  ]
+}

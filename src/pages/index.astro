@@ -4,10 +4,12 @@ import Base from '../layouts/Base.astro'
 import Section from '../components/Section.astro'
 import Terminal from '../components/Terminal.astro'
 import CopyCommand from '../components/CopyCommand.astro'
-import { getLatestVersion } from '../lib/version.ts'
+import cli from '../data/cli.json'
 import mascot from '../assets/mascot.png'
 
-const version = await getLatestVersion()
+// Synced from the skel repo's latest release by scripts/sync-cli.mjs and
+// committed, so a build never depends on GitHub being reachable.
+const version = cli.version
 const repo = 'https://github.com/mark-mcdermott/skel'
 
 const description =

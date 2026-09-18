@@ -1,0 +1,55 @@
+name: sync
+
+# Pulls skel's released facts into src/data/cli.json and pushes the result,
+# which is what triggers a Vercel deploy. Three ways in:
+#   - repository_dispatch, fired by the skel repo's release workflow
+#   - a daily cron, which catches a release that fired nothing
+#   - manual
+on:
+  repository_dispatch:
+    types: [cli-release]
+  schedule:
+    - cron: '41 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Sync from skel's latest release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm sync
+
+      - run: pnpm check && pnpm build
+
+      # The page paraphrases skel's install steps and ruleset. If either moved
+      # upstream, that copy is now potentially wrong, so fail here rather than
+      # deploy it. Fix the wording on the page, run `pnpm bless`, and commit.
+      # These two checks need no browser, so chromium is not installed.
+      - name: Guard the paraphrased copy
+        run: pnpm exec playwright test -g "unchanged since they were last reviewed"
+
+      - name: Commit if the CLI moved
+        run: |
+          if git diff --quiet -- src/data/cli.json; then
+            echo "cli.json unchanged — nothing to deploy"
+            exit 0
+          fi
+          version=$(node -p "require('./src/data/cli.json').version")
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/cli.json
+          git commit -m "chore(content): sync cli data for v${version}"
+          git push
