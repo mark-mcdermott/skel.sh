@@ -46,6 +46,53 @@ test.describe('content is in step with the CLI', () => {
   })
 })
 
+/**
+ * The toggle has three states, not two: no stored choice means "follow the
+ * system". The third test is the one worth having — it is easy to write a
+ * toggle that pins an explicit value forever, so that returning to the theme
+ * your OS already prefers quietly stops tracking it.
+ */
+test.describe('theme toggle', () => {
+  const theme = (page: import('@playwright/test').Page) =>
+    page.evaluate(() => document.documentElement.dataset.theme)
+
+  test('flips the theme and repaints the page', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.goto('/')
+
+    const background = () =>
+      page.evaluate(() => getComputedStyle(document.body).backgroundColor)
+    const before = await background()
+
+    await page.click('[data-theme-toggle]')
+
+    expect(await theme(page)).toBe('dark')
+    // Asserting the attribute alone would pass even if no CSS responded to it.
+    expect(await background()).not.toBe(before)
+  })
+
+  test('remembers the choice across a reload', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.goto('/')
+    await page.click('[data-theme-toggle]')
+    await page.reload()
+
+    expect(await theme(page)).toBe('dark')
+  })
+
+  test('choosing the system preference stops overriding it', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await page.goto('/')
+
+    await page.click('[data-theme-toggle]')
+    expect(await theme(page)).toBe('light')
+
+    await page.click('[data-theme-toggle]')
+    expect(await theme(page)).toBeUndefined()
+    expect(await page.evaluate(() => localStorage.getItem('theme'))).toBeNull()
+  })
+})
+
 test.describe('layout', () => {
   for (const width of [320, 375, 768, 1024, 1440]) {
     test(`no horizontal overflow at ${width}px`, async ({ page }) => {

@@ -38,6 +38,8 @@
    fg 17.74 · fg-soft 14.28 · fg-muted 5.62 · accent 5.31
    (the sunk surface costs about 0.4 across the board and still clears). */
 :root {
+  color-scheme: light;
+
   --surface: #faf8f5;
   --surface-sunk: #f2eee8;
   --edge: #e4ded4;
@@ -59,8 +61,19 @@
  *
  * Measured against surface: fg 17.02 · fg-soft 12.95 · fg-muted 6.12 · accent 9.94
  */
+/*
+ * The dark values are written twice on purpose, because they apply in two
+ * unrelated situations: the visitor's system is dark and they have not chosen
+ * otherwise, or they have explicitly picked dark. CSS has no way to share one
+ * declaration block between a media query and an attribute selector, and
+ * `light-dark()` would collapse this neatly but fails outright on browsers that
+ * don't know it — a blank palette rather than a graceful fallback. Duplication
+ * is the safe version. Keep the two lists identical.
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
     --surface: #14110f;
     --surface-sunk: #1d1917;
     --edge: #332d29;
@@ -76,6 +89,48 @@
        bone 15.74 · white/50 prompt 5.11 · blush 8.82. */
     --terminal: #221d1a;
   }
+}
+
+/* An explicit choice of dark, which must win even on a light system. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --surface: #14110f;
+  --surface-sunk: #1d1917;
+  --edge: #332d29;
+  --fg: #f7f3ee;
+  --fg-soft: #ddd5cc;
+  --fg-muted: #9c918a;
+  --accent: #f2a8bc;
+  --terminal: #221d1a;
+}
+
+/*
+ * The toggle shows the theme you'd get by clicking, so its icon has to follow
+ * the same three-state logic as the palette above. Done in CSS rather than JS
+ * so it is already correct in the first painted frame — a sun icon flashing on
+ * a bone page would be a worse tell than no icon at all.
+ */
+[data-theme-icon='to-light'] {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) [data-theme-icon='to-dark'] {
+    display: none;
+  }
+
+  :root:not([data-theme='light']) [data-theme-icon='to-light'] {
+    display: block;
+  }
+}
+
+:root[data-theme='dark'] [data-theme-icon='to-dark'] {
+  display: none;
+}
+
+:root[data-theme='dark'] [data-theme-icon='to-light'] {
+  display: block;
 }
 
 @layer base {

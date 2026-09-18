@@ -1,0 +1,78 @@
+---
+/**
+ * Light/dark toggle.
+ *
+ * Three states, not two: no stored choice means "follow the system", which is
+ * the default. Clicking sets an explicit override — and clicking back to
+ * whatever the system already prefers clears the override rather than pinning
+ * it, so the page returns to following the OS instead of being stuck on a
+ * value that happens to match today.
+ *
+ * The icon swap is CSS (see globals.css); this only moves the attribute.
+ */
+---
+
+<button
+  type="button"
+  class="-mr-1.5 cursor-pointer rounded-lg border border-transparent p-1.5 text-fg-muted transition-colors hover:border-edge hover:bg-surface-sunk hover:text-fg"
+  data-theme-toggle
+  aria-label="Toggle light and dark theme"
+  title="Toggle light and dark theme"
+>
+  <svg
+    data-theme-icon="to-dark"
+    class="size-4"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.6 8.6 0 1 0 10.8 10.8z"></path>
+  </svg>
+
+  <svg
+    data-theme-icon="to-light"
+    class="size-4"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4.2"></circle>
+    <path
+      d="M12 2.6v2.2M12 19.2v2.2M4.36 4.36l1.56 1.56M18.08 18.08l1.56 1.56M2.6 12h2.2M19.2 12h2.2M4.36 19.64l1.56-1.56M18.08 5.92l1.56-1.56"
+    ></path>
+  </svg>
+</button>
+
+<script>
+  const root = document.documentElement
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
+  const button = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')
+
+  const systemTheme = () => (systemDark.matches ? 'dark' : 'light')
+  const currentTheme = () => root.dataset.theme ?? systemTheme()
+
+  button?.addEventListener('click', () => {
+    const next = currentTheme() === 'dark' ? 'light' : 'dark'
+
+    try {
+      if (next === systemTheme()) {
+        delete root.dataset.theme
+        localStorage.removeItem('theme')
+      } else {
+        root.dataset.theme = next
+        localStorage.setItem('theme', next)
+      }
+    } catch {
+      // Private mode, or storage blocked. The theme still changes for this
+      // page view; it just won't be remembered, which beats doing nothing.
+      root.dataset.theme = next
+    }
+  })
+</script>

@@ -4,6 +4,7 @@ import Base from '../layouts/Base.astro'
 import Section from '../components/Section.astro'
 import Terminal from '../components/Terminal.astro'
 import CopyCommand from '../components/CopyCommand.astro'
+import ThemeToggle from '../components/ThemeToggle.astro'
 import cli from '../data/cli.json'
 import mascot from '../assets/mascot.png'
 
@@ -44,12 +45,16 @@ const rules = [
       </span>
     </div>
 
-    <a
-      href={repo}
-      class="font-mono text-sm text-fg-muted underline-offset-4 transition-colors hover:text-fg hover:underline"
-    >
-      GitHub
-    </a>
+    <div class="flex items-center gap-4">
+      <a
+        href={repo}
+        class="font-mono text-sm text-fg-muted underline-offset-4 transition-colors hover:text-fg hover:underline"
+      >
+        GitHub
+      </a>
+
+      <ThemeToggle />
+    </div>
   </header>
 
   <main>
