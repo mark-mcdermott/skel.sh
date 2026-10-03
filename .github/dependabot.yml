@@ -1,0 +1,26 @@
+version: 2
+updates:
+  # Pinned action versions drift here the same way they do in the CLI repos.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Unlike the Bash CLIs, the site carries a real dependency surface — astro,
+  # tailwind, sharp, playwright, the vercel packages. Minor and patch bumps
+  # arrive as one grouped PR, since the suite either passes or it doesn't;
+  # majors stay separate so each gets read on its own.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
