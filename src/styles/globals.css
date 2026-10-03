@@ -106,6 +106,29 @@
 }
 
 /*
+ * Grows a control's *hit* area to at least 44x44 without touching its painted
+ * size, so pointer accuracy improves and the header's spacing is unchanged.
+ * Padding would have done the same job but moved everything around it.
+ *
+ * `max()` means this can only ever expand: a control already wider than 44px
+ * keeps its own width, so neighbours never collide. Centred so the growth is
+ * even on all sides.
+ */
+.tap-target {
+  position: relative;
+}
+
+.tap-target::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+
+/*
  * The toggle shows the theme you'd get by clicking, so its icon has to follow
  * the same three-state logic as the palette above. Done in CSS rather than JS
  * so it is already correct in the first painted frame — a sun icon flashing on

@@ -71,6 +71,11 @@ pnpm bless     # re-approve upstream wording after updating the page copy
 - **The theme script in `Base.astro` must stay `is:inline` and in `<head>`.** Bundling or
   deferring it means the browser paints before the stored choice is applied, so anyone whose
   theme opposes their OS sees the wrong one flash first.
+- **`.tap-target` grows a control's hit area, not its painted size.** It uses a centred
+  `::after` with `max(100%, 44px)`, so a control already larger keeps its own size and
+  neighbours never collide. Padding would hit the same WCAG target but move the surrounding
+  layout. A regression here is invisible — the control looks right and is only harder to
+  press — so a test asserts both the 44px floor and the absence of overlaps.
 
 ## Release flow
 

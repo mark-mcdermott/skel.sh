@@ -28,7 +28,7 @@ const rules = [
 
 <Base title="skel — scaffold a project by typing a tree" description={description}>
   <a
-    href="#demo"
+    href="#main"
     class="sr-only rounded-lg bg-fg px-4 py-2 font-mono text-sm text-surface focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50"
   >
     Skip to content
@@ -36,7 +36,7 @@ const rules = [
 
   <header class="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-5">
     <div class="flex items-center gap-2.5">
-      <Image src={mascot} alt="" width={20} densities={[1, 2]} aria-hidden="true" />
+      <Image src={mascot} alt="" width={20} densities={[1, 2]} loading="eager" aria-hidden="true" />
       <span class="font-mono text-sm font-medium tracking-tight">skel</span>
       <span
         class="rounded-full border border-edge px-2 py-0.5 font-mono text-[11px] text-fg-muted"
@@ -48,7 +48,7 @@ const rules = [
     <div class="flex items-center gap-4">
       <a
         href={repo}
-        class="font-mono text-sm text-fg-muted underline-offset-4 transition-colors hover:text-fg hover:underline"
+        class="tap-target font-mono text-sm text-fg-muted underline-offset-4 transition-colors hover:text-fg hover:underline"
       >
         GitHub
       </a>
@@ -57,7 +57,7 @@ const rules = [
     </div>
   </header>
 
-  <main>
+  <main id="main" tabindex="-1" class="focus:outline-none">
     <!-- Hero -->
     <div class="mx-auto w-full max-w-5xl px-6 pt-8 pb-16 sm:pt-16 sm:pb-24">
       <div class="grid items-center gap-10 sm:gap-14 md:grid-cols-[280px_1fr]">
@@ -217,12 +217,15 @@ const rules = [
       </div>
 
       <div class="flex gap-5 font-mono text-xs text-fg-muted">
-        <a href={repo} class="underline-offset-4 transition-colors hover:text-fg hover:underline">
+        <a
+          href={repo}
+          class="tap-target underline-offset-4 transition-colors hover:text-fg hover:underline"
+        >
           GitHub
         </a>
         <a
           href="https://markmcdermott.io"
-          class="underline-offset-4 transition-colors hover:text-fg hover:underline"
+          class="tap-target underline-offset-4 transition-colors hover:text-fg hover:underline"
         >
           Mark McDermott
         </a>
