@@ -40,41 +40,83 @@ const isLead = variant === 'lead'
     data-copy-button
     data-command={command}
     aria-label={`Copy "${command}" to clipboard`}
+    aria-live="polite"
   >
     <span data-copy-idle>Copy</span>
     <span class="hidden text-accent" data-copy-done>Copied</span>
+    <!-- Replaced with the platform's own shortcut on first run; the Mac form is
+         the SSR default only because it is the narrower of the two. -->
+    <span class="hidden text-fg-muted" data-copy-fallback>press ⌘C</span>
   </button>
 </div>
 
 <script>
   const RESET_MS = 2000
 
+  // The page offers macOS *and* Linux installs, so telling every visitor to
+  // press a key only one of them has would be its own small bug.
+  const isApple = /mac|iphone|ipad|ipod/i.test(navigator.userAgent)
+  const SHORTCUT = isApple ? 'press \u2318C' : 'press Ctrl+C'
+
+  /**
+   * Selects just the command text, so the shortcut we are about to suggest has
+   * something to act on. Without this the fallback is only a label change and
+   * the keystroke copies whatever was on the clipboard already — worse than
+   * doing nothing, because it looks like it worked.
+   *
+   * The `$` prompt is a separate `select-none` span, so selecting the text node
+   * rather than the whole `<code>` keeps it out of what gets copied.
+   */
+  function selectCommandText(button: HTMLElement) {
+    const code = button.closest('[data-copy-command]')?.querySelector('code')
+    const text = code && [...code.childNodes].find(
+      (n) => n.nodeType === Node.TEXT_NODE && n.textContent?.trim(),
+    )
+    if (!text) return
+
+    const range = document.createRange()
+    range.selectNodeContents(text)
+
+    const selection = window.getSelection()
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+  }
+
   document.querySelectorAll<HTMLButtonElement>('[data-copy-button]').forEach((button) => {
     const idle = button.querySelector<HTMLElement>('[data-copy-idle]')
     const done = button.querySelector<HTMLElement>('[data-copy-done]')
+    const fallback = button.querySelector<HTMLElement>('[data-copy-fallback]')
     const command = button.dataset.command
-    if (!idle || !done || !command) return
+    if (!idle || !done || !fallback || !command) return
+
+    fallback.textContent = SHORTCUT
 
     let timer: ReturnType<typeof setTimeout> | undefined
 
-    button.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(command)
-      } catch {
-        // Denied permission, or a non-secure context. The command is visible
-        // and selectable either way, so this stays silent rather than throwing
-        // an error state at someone who can just select the text.
-        return
-      }
-
-      idle.hidden = true
-      done.classList.remove('hidden')
+    const show = (state: HTMLElement) => {
+      idle.hidden = state !== idle
+      done.classList.toggle('hidden', state !== done)
+      fallback.classList.toggle('hidden', state !== fallback)
 
       clearTimeout(timer)
       timer = setTimeout(() => {
         idle.hidden = false
         done.classList.add('hidden')
+        fallback.classList.add('hidden')
       }, RESET_MS)
+    }
+
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(command)
+        show(done)
+      } catch {
+        // Denied permission, or a non-secure context. Hand the command over
+        // manually rather than failing silently — a click that changes nothing
+        // reads as success, and the next paste is whatever was there before.
+        selectCommandText(button)
+        show(fallback)
+      }
     })
   })
 </script>

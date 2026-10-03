@@ -93,6 +93,63 @@ test.describe('theme toggle', () => {
   })
 })
 
+/**
+ * Both of these failed the QA pass in ways that look fine on screen: the skip
+ * link worked, it just landed past the hero; and the copy button "worked" by
+ * doing nothing at all when the clipboard was denied.
+ */
+test.describe('keyboard and clipboard affordances', () => {
+  test('the skip link lands at the start of the content, not past it', async ({ page }) => {
+    await page.goto('/')
+    await page.keyboard.press('Tab')
+
+    const link = page.locator('a', { hasText: 'Skip to content' })
+    await expect(link).toBeFocused()
+    // #demo starts *after* the hero, so skipping there skips the install command.
+    await expect(link).toHaveAttribute('href', '#main')
+
+    await page.keyboard.press('Enter')
+    // Without tabindex="-1" on <main> the browser scrolls but focus never moves.
+    await expect(page.locator('main')).toBeFocused()
+  })
+
+  test('a denied clipboard offers the keyboard shortcut instead of failing silently', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    await page.evaluate(() => {
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: { writeText: () => Promise.reject(new Error('denied')) },
+      })
+    })
+
+    const button = page.locator('[data-copy-button]').first()
+    await button.click()
+
+    await expect(button).toContainText(/press (⌘C|Ctrl\+C)/)
+    await expect(button.locator('[data-copy-idle]')).toBeHidden()
+
+    // The suggestion is only honest if the keystroke has something to copy.
+    const selected = await page.evaluate(() => window.getSelection()?.toString() ?? '')
+    expect(selected).toBe('brew install mark-mcdermott/skel/skel')
+  })
+
+  test('a working clipboard still reports success', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+    await page.goto('/')
+
+    const button = page.locator('[data-copy-button]').first()
+    await button.click()
+
+    await expect(button).toContainText('Copied')
+    await expect(button.locator('[data-copy-idle]')).toBeHidden()
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+      'brew install mark-mcdermott/skel/skel',
+    )
+  })
+})
+
 test.describe('layout', () => {
   for (const width of [320, 375, 768, 1024, 1440]) {
     test(`no horizontal overflow at ${width}px`, async ({ page }) => {
