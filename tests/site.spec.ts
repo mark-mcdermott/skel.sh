@@ -150,6 +150,52 @@ test.describe('keyboard and clipboard affordances', () => {
   })
 })
 
+/**
+ * Hit areas are grown by a centred pseudo-element rather than padding, so a
+ * regression here is invisible — the control looks identical and is just harder
+ * to hit. Hence the test.
+ *
+ * Two exemptions, both deliberate:
+ *  - the skip link is reachable only by keyboard and activated with Enter, so
+ *    it is never a touch target;
+ *  - "source" sits inline in a sentence, which WCAG 2.5.8 explicitly excludes —
+ *    and growing it would overlap the line of text around it.
+ */
+test('interactive controls have 44px hit areas that never overlap', async ({ page }) => {
+  for (const width of [375, 1280]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/')
+
+    const { small, overlaps } = await page.evaluate(() => {
+      const box = (el: Element) => {
+        const r = el.getBoundingClientRect()
+        const grown = el.classList.contains('tap-target')
+        const w = grown ? Math.max(r.width, 44) : r.width
+        const h = grown ? Math.max(r.height, 44) : r.height
+        return {
+          x1: r.left + r.width / 2 - w / 2, x2: r.left + r.width / 2 + w / 2,
+          y1: r.top + r.height / 2 - h / 2, y2: r.top + r.height / 2 + h / 2,
+          w, h, name: (el.getAttribute('aria-label') || el.textContent || '').trim().slice(0, 24),
+        }
+      }
+      const boxes = [...document.querySelectorAll('a,button')].map(box)
+      const overlaps: string[] = []
+      for (let i = 0; i < boxes.length; i++) {
+        for (let j = i + 1; j < boxes.length; j++) {
+          const a = boxes[i], b = boxes[j]
+          if (a.x1 < b.x2 && b.x1 < a.x2 && a.y1 < b.y2 && b.y1 < a.y2) {
+            overlaps.push(`${a.name} overlaps ${b.name}`)
+          }
+        }
+      }
+      return { small: boxes.filter((b) => b.w < 44 || b.h < 44).map((b) => b.name), overlaps }
+    })
+
+    expect(overlaps, `overlapping hit areas at ${width}px`).toEqual([])
+    expect(small.sort(), `undersized hit areas at ${width}px`).toEqual(['Skip to content', 'source'])
+  }
+})
+
 test.describe('layout', () => {
   for (const width of [320, 375, 768, 1024, 1440]) {
     test(`no horizontal overflow at ${width}px`, async ({ page }) => {

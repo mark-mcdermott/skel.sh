@@ -48,7 +48,7 @@ const rules = [
     <div class="flex items-center gap-4">
       <a
         href={repo}
-        class="font-mono text-sm text-fg-muted underline-offset-4 transition-colors hover:text-fg hover:underline"
+        class="tap-target font-mono text-sm text-fg-muted underline-offset-4 transition-colors hover:text-fg hover:underline"
       >
         GitHub
       </a>
@@ -217,12 +217,15 @@ const rules = [
       </div>
 
       <div class="flex gap-5 font-mono text-xs text-fg-muted">
-        <a href={repo} class="underline-offset-4 transition-colors hover:text-fg hover:underline">
+        <a
+          href={repo}
+          class="tap-target underline-offset-4 transition-colors hover:text-fg hover:underline"
+        >
           GitHub
         </a>
         <a
           href="https://markmcdermott.io"
-          class="underline-offset-4 transition-colors hover:text-fg hover:underline"
+          class="tap-target underline-offset-4 transition-colors hover:text-fg hover:underline"
         >
           Mark McDermott
         </a>
