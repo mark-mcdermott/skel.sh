@@ -1,4 +1,8 @@
 version: 2
+
+# Minor and patch bumps arrive as one grouped PR per ecosystem — the suite
+# either passes or it doesn't. Majors are deliberately left out of the groups so
+# each one arrives on its own and gets read on its own.
 updates:
   # Pinned action versions drift here the same way they do in the CLI repos.
   - package-ecosystem: github-actions
@@ -8,11 +12,10 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+        update-types: [minor, patch]
 
   # Unlike the Bash CLIs, the site carries a real dependency surface — astro,
-  # tailwind, sharp, playwright, the vercel packages. Minor and patch bumps
-  # arrive as one grouped PR, since the suite either passes or it doesn't;
-  # majors stay separate so each gets read on its own.
+  # tailwind, sharp, playwright, the vercel packages.
   - package-ecosystem: npm
     directory: /
     schedule:
